@@ -5,6 +5,7 @@ import { RiLogoutBoxRLine } from 'react-icons/ri';
 import { IconContext } from 'react-icons';
 import api from '../../services/api';
 import Swal from 'sweetalert2';
+import styled from 'styled-components';
 
 function Header() {
     const { pathname } = useLocation();
@@ -53,12 +54,16 @@ function Header() {
         <Box sx={styles}>
             <img src={img} alt={'RepoProvas'} />
             <IconContext.Provider value={{ color: 'black', size: '2em' }}>
-                <div>
+                <Div>
                     <RiLogoutBoxRLine onClick={() => logout()} />
-                </div>
+                </Div>
             </IconContext.Provider>
         </Box>
     );
 }
 
 export default Header;
+
+const Div = styled.div`
+    cursor: pointer;
+`;
