@@ -45,13 +45,7 @@ function Login() {
         try {
             await api.authToken(auth.token);
             navigate('/timeline');
-        } catch {
-            Swal.fire({
-                icon: 'error',
-                title: 'Ops!',
-                text: 'Please login to continue',
-            });
-        }
+        } catch {}
     }
 
     function handleChange(prop: string, target: { value: string }) {
