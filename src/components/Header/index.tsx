@@ -10,7 +10,8 @@ import styled from 'styled-components';
 function Header() {
     const { pathname } = useLocation();
     let centeredLogo = pathname === '/' || pathname === '/signup';
-    const auth = JSON.parse(localStorage.getItem('auth') || '');
+    // @ts-ignore
+    const auth = JSON.parse(localStorage.getItem('auth'));
     const navigate = useNavigate();
     const styles = {
         width: '100vw',

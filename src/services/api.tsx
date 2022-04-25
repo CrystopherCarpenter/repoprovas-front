@@ -24,7 +24,7 @@ async function login(data: any) {
 async function logout(token: any) {
     const config = createConfig(token);
 
-    const promise = await axios.delete(`${BASE_URL}/logout`, config);
+    const promise = await axios.get(`${BASE_URL}/logout`, config);
     return promise;
 }
 

@@ -22,54 +22,12 @@ import { useNavigate } from 'react-router-dom';
 
 function Repo() {
     const [tab, setTab] = useState(0);
-    const [data, setData] = useState([]);
-    const instructorsSearch = ['Pedrão', 'Dina'];
-    const instructors = [
-        {
-            instructor: 'Pedrão',
-            exams: [
-                { name: 'P1', classes: ['React', 'HTML', 'JS'] },
-                { name: 'P2', classes: ['React', 'CSS', 'SQL'] },
-                { name: 'P3', classes: ['React', 'HTML', 'Mongo'] },
-            ],
-        },
-        {
-            instructor: 'Dina',
-            exams: [
-                { name: 'P1', classes: ['React', 'HTML', 'JS'] },
-                { name: 'P2', classes: ['React', 'CSS', 'SQL'] },
-                { name: 'P3', classes: ['React', 'HTML', 'Mongo'] },
-            ],
-        },
-    ];
-    const classesSearch = ['React', 'HTML', 'SQL', 'CSS', 'Mongo', 'JS'];
-    const periodos = [
-        {
-            periodo: '1',
-            classes: [
-                { name: 'React', exams: ['P1', 'P2'] },
-                { name: 'HTML', exams: ['P1', 'P2', 'P3'] },
-                { name: 'JS', exams: ['P1', 'P2', 'P3', 'P4'] },
-            ],
-        },
-        {
-            periodo: '2',
-            classes: [
-                { name: 'React', exams: ['P1', 'P2'] },
-                { name: 'CSS', exams: ['P1', 'P2', 'P3'] },
-                { name: 'SQL', exams: ['P1', 'P2', 'P3', 'P4'] },
-            ],
-        },
-        {
-            periodo: '3',
-            classes: [
-                { name: 'React', exams: ['P1', 'P2'] },
-                { name: 'Mongo', exams: ['P1', 'P2', 'P3'] },
-                { name: 'HTML', exams: ['P1', 'P2', 'P3', 'P4'] },
-            ],
-        },
-    ];
-    const auth = JSON.parse(localStorage.getItem('auth') || '');
+    const [teachers, setTeachers] = useState([]);
+    const [dataByTeacher, setDataByTeacher] = useState([]);
+    const [disciplines, setDisciplines] = useState([]);
+    const [dataByTerm, setDataByTerm] = useState([]);
+    // @ts-ignore
+    const auth = JSON.parse(localStorage.getItem('auth'));
     const navigate = useNavigate();
 
     useEffect(() => {
@@ -98,14 +56,16 @@ function Repo() {
     async function loadData() {
         try {
             const { data } = await api.getData(auth);
-            setData(data);
+            setTeachers(data.teachers);
+            setDisciplines(data.disciplines);
+            setDataByTeacher(data.dataByTeacher);
+            setDataByTerm(data.dataByTerm);
         } catch {
             Swal.fire({
                 icon: 'error',
                 title: 'Ops!',
                 text: 'Recarregue a página',
             });
-            setData([]);
         }
     }
 
@@ -116,97 +76,140 @@ function Repo() {
     function Class() {
         return (
             <>
-                {periodos.map((item) => (
-                    <Accordion key={item.periodo}>
-                        <AccordionSummary
-                            expandIcon={<ExpandMoreIcon />}
-                            aria-controls="panel1a-content"
-                            id="panel1a-header"
-                        >
-                            <Typography>{item.periodo} Período</Typography>
-                        </AccordionSummary>
-                        <AccordionDetails>
-                            {item.classes.map(
-                                (classItem: {
-                                    name: string;
-                                    exams: string[];
-                                }) => (
-                                    <Accordion key={classItem.name}>
-                                        <AccordionSummary
-                                            expandIcon={<ExpandMoreIcon />}
-                                            aria-controls="panel1a-content"
-                                            id="panel1a-header"
-                                        >
-                                            <Typography>
-                                                {classItem.name}
-                                            </Typography>
-                                        </AccordionSummary>
-                                        <AccordionDetails>
-                                            {classItem.exams.map(
-                                                (item: string) => (
-                                                    <List key={item}>
-                                                        <ListItem>
-                                                            <ListItemText
-                                                                primary={item}
-                                                                secondary={
-                                                                    'data (link da prova)'
-                                                                }
-                                                            />
-                                                        </ListItem>
-                                                    </List>
-                                                )
-                                            )}
-                                        </AccordionDetails>
-                                    </Accordion>
-                                )
-                            )}
-                        </AccordionDetails>
-                    </Accordion>
-                ))}
+                {dataByTerm?.map(
+                    (term: {
+                        disciplines: any[];
+                        id: number;
+                        number: number;
+                    }) => (
+                        <Accordion key={term.id}>
+                            <AccordionSummary
+                                expandIcon={<ExpandMoreIcon />}
+                                aria-controls="panel1a-content"
+                                id="panel1a-header"
+                            >
+                                <Typography>{term.number} Período</Typography>
+                            </AccordionSummary>
+                            <AccordionDetails>
+                                {term.disciplines.map(
+                                    (discipline: {
+                                        name: string;
+                                        teacherDisciplines: any[];
+                                    }) => (
+                                        <Accordion key={discipline.name}>
+                                            <AccordionSummary
+                                                expandIcon={<ExpandMoreIcon />}
+                                                aria-controls="panel1a-content"
+                                                id="panel1a-header"
+                                            >
+                                                <Typography>
+                                                    {discipline.name}
+                                                </Typography>
+                                            </AccordionSummary>
+                                            <AccordionDetails>
+                                                {discipline.teacherDisciplines.map(
+                                                    (item: any) =>
+                                                        item.tests.map(
+                                                            (test: any) => (
+                                                                <List
+                                                                    key={
+                                                                        test.id
+                                                                    }
+                                                                >
+                                                                    <ListItem>
+                                                                        <ListItemText
+                                                                            primary={
+                                                                                test.category
+                                                                            }
+                                                                            secondary={
+                                                                                <a
+                                                                                    href={
+                                                                                        test.pdfUrl
+                                                                                    }
+                                                                                >
+                                                                                    {
+                                                                                        test.name
+                                                                                    }{' '}
+                                                                                    {
+                                                                                        '('
+                                                                                    }
+                                                                                    {
+                                                                                        item
+                                                                                            .teacher
+                                                                                            .name
+                                                                                    }
+                                                                                    {
+                                                                                        ')'
+                                                                                    }
+                                                                                </a>
+                                                                            }
+                                                                        />
+                                                                    </ListItem>
+                                                                </List>
+                                                            )
+                                                        )
+                                                )}
+                                            </AccordionDetails>
+                                        </Accordion>
+                                    )
+                                )}
+                            </AccordionDetails>
+                        </Accordion>
+                    )
+                )}
             </>
         );
     }
     function Instructor() {
         return (
             <>
-                {instructors.map((instructor) => (
-                    <Accordion key={instructor.instructor}>
+                {dataByTeacher?.map((teacher: any) => (
+                    <Accordion key={teacher.id}>
                         <AccordionSummary
                             expandIcon={<ExpandMoreIcon />}
                             aria-controls="panel1a-content"
                             id="panel1a-header"
                         >
-                            <Typography>{instructor.instructor}</Typography>
+                            <Typography>{teacher.name}</Typography>
                         </AccordionSummary>
                         <AccordionDetails>
-                            {instructor.exams.map(
-                                (exam: { name: string; classes: string[] }) => (
-                                    <Accordion key={exam.name}>
+                            {teacher.teacherDisciplines.map((item: any) =>
+                                item.tests.map((test: any) => (
+                                    <Accordion key={test.id}>
                                         <AccordionSummary
                                             expandIcon={<ExpandMoreIcon />}
                                             aria-controls="panel1a-content"
                                             id="panel1a-header"
                                         >
-                                            <Typography>{exam.name}</Typography>
+                                            <Typography>{test.name}</Typography>
                                         </AccordionSummary>
                                         <AccordionDetails>
-                                            {exam.classes.map(
-                                                (item: string) => (
-                                                    <List key={item}>
-                                                        <ListItem>
-                                                            <ListItemText
-                                                                primary={item}
-                                                                secondary={
-                                                                    'data (link da prova)'
+                                            <List key={test.categorie.name}>
+                                                <ListItem>
+                                                    <ListItemText
+                                                        primary={
+                                                            test.categorie.name
+                                                        }
+                                                        secondary={
+                                                            <a
+                                                                href={
+                                                                    test.pdfUrl
                                                                 }
-                                                            />
-                                                        </ListItem>
-                                                    </List>
-                                                )
-                                            )}
+                                                            >
+                                                                {test.name}{' '}
+                                                                {
+                                                                    item
+                                                                        .discipline
+                                                                        .name
+                                                                }
+                                                            </a>
+                                                        }
+                                                    />
+                                                </ListItem>
+                                            </List>
                                         </AccordionDetails>
                                     </Accordion>
-                                )
+                                ))
                             )}
                         </AccordionDetails>
                     </Accordion>
@@ -261,9 +264,7 @@ function Repo() {
                 flexDirection: 'column',
             }}
         >
-            {tab !== 2 && (
-                <Search data={tab === 0 ? classesSearch : instructorsSearch} />
-            )}
+            {tab !== 2 && <Search data={tab === 0 ? disciplines : teachers} />}
             <Divider sx={{ width: '100vw' }} />
             <Box
                 sx={{

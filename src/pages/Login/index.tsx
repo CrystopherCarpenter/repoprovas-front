@@ -31,7 +31,8 @@ function Login() {
     const [loading, setLoading] = useState(false);
     const navigation = `${loading ? '' : '/signup'}`;
     const navigate = useNavigate();
-    const auth = JSON.parse(localStorage.getItem('auth') || '');
+    // @ts-ignore
+    const auth = JSON.parse(localStorage.getItem('auth'));
     const { setAuthData } = useAuth();
 
     useEffect(() => {
@@ -44,7 +45,7 @@ function Login() {
     async function authValidation() {
         try {
             await api.authToken(auth.token);
-            navigate('/timeline');
+            navigate('/repo');
         } catch {}
     }
 
@@ -68,7 +69,6 @@ function Login() {
 
         try {
             const { data } = await api.login(user);
-            localStorage.setItem('auth', JSON.stringify(data));
             setAuthData(data);
             navigate('/repo');
         } catch (error: any) {

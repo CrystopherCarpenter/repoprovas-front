@@ -7,7 +7,8 @@ interface contextInterface {
 const AuthContext = createContext<contextInterface | any>(null);
 
 export function AuthProvider({ children }: any) {
-    const persistedAuth: any = JSON.parse(localStorage.getItem('auth') || '');
+    // @ts-ignore
+    const persistedAuth: any = JSON.parse(localStorage.getItem('auth'));
     const [auth, setAuth] = useState(persistedAuth);
 
     function setAuthData(authData: any) {
