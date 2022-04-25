@@ -1,13 +1,16 @@
 import { Box } from '@mui/system';
 import img from '../../assets/logo.jpg';
-import { useLocation } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { RiLogoutBoxRLine } from 'react-icons/ri';
 import { IconContext } from 'react-icons';
+import api from '../../services/api';
+import Swal from 'sweetalert2';
 
 function Header() {
     const { pathname } = useLocation();
     let centeredLogo = pathname === '/' || pathname === '/signup';
-
+    const auth = JSON.parse(localStorage.getItem('auth') || '');
+    const navigate = useNavigate();
     const styles = {
         width: '100vw',
         height: '170px',
@@ -31,12 +34,27 @@ function Header() {
             cursor: 'pointer',
         },
     };
+
+    async function logout() {
+        try {
+            await api.logout(auth);
+            localStorage.clear();
+            navigate(`/`);
+        } catch {
+            Swal.fire({
+                icon: 'error',
+                title: 'Ops!',
+                text: 'Ocorreu um erro, tente novamente',
+            });
+        }
+    }
+
     return (
         <Box sx={styles}>
             <img src={img} alt={'RepoProvas'} />
             <IconContext.Provider value={{ color: 'black', size: '2em' }}>
                 <div>
-                    <RiLogoutBoxRLine />
+                    <RiLogoutBoxRLine onClick={() => logout()} />
                 </div>
             </IconContext.Provider>
         </Box>
