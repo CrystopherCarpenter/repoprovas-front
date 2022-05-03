@@ -58,6 +58,7 @@ export interface Test {
     id: number;
     name: string;
     pdfUrl: string;
+    views?: number;
     category: Category;
 }
 
@@ -101,7 +102,11 @@ async function getCategories(token: string) {
 
 async function postTest(testData: TestData, token: string) {
     const config = getConfig(token);
-    return baseAPI.post<{ categories: Category[] }>('/tests', testData, config);
+    return baseAPI.post('/tests', testData, config);
+}
+
+async function updateViews(testId: number) {
+    return baseAPI.put(`/tests/${testId}`);
 }
 
 const api = {
@@ -111,6 +116,7 @@ const api = {
     getTestsByTeacher,
     getCategories,
     postTest,
+    updateViews,
 };
 
 export default api;

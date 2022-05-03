@@ -99,10 +99,6 @@ function Add() {
 
         try {
             await api.postTest(formData, token);
-            setMessage({
-                type: 'success',
-                text: 'Prova adicionada com sucesso!',
-            });
             setFormData({
                 name: '',
                 pdfUrl: '',
@@ -112,6 +108,10 @@ function Add() {
             setSelectedCategory('');
             setSelectedDiscipline('');
             setSelectedTeacher('');
+            setMessage({
+                type: 'success',
+                text: 'Prova adicionada com sucesso!',
+            });
         } catch (error: any) {
             if (error.response) {
                 setMessage({

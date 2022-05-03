@@ -286,13 +286,25 @@ function Tests({
                 testsWithDisciplines.tests
                     .filter((test) => testOfCategory(test, categoryId))
                     .map((test) => (
-                        <Typography key={test.id} color="#878787">
+                        <Typography
+                            sx={{
+                                display: 'flex',
+                                justifyContent: 'space-between',
+                            }}
+                            key={test.id}
+                            color="#878787"
+                        >
                             <Link
                                 href={test.pdfUrl}
                                 target="_blank"
                                 underline="none"
                                 color="inherit"
-                            >{`${test.name} (${testsWithDisciplines.teacherName})`}</Link>
+                                onClick={() => api.updateViews(test.id)}
+                            >{`${test.name} (${testsWithDisciplines.teacherName})`}</Link>{' '}
+                            {test.views}{' '}
+                            {test.views === 1
+                                ? 'visualização'
+                                : 'visualizações'}
                         </Typography>
                     ))
             )}
