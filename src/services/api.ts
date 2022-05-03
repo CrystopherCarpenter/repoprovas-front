@@ -62,11 +62,10 @@ export interface Test {
 }
 
 export interface TestData {
-    title: string;
-    testPDF: string;
-    category: string | null;
-    discipline: string | null;
-    teacher: string | null;
+    name: string;
+    pdfUrl: string;
+    categoryId: number | null;
+    teacherDisciplineId: number | null;
 }
 
 export type TestByDiscipline = Term & {

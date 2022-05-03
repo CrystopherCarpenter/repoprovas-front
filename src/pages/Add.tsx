@@ -19,23 +19,29 @@ const styles = {
     input: { marginBottom: '28px', height: '56px', width: '100%' },
 };
 
+interface Categories {
+    [propName: string]: number;
+}
+
 function Add() {
     const { token }: any = useAuth();
     const [teacherByDiscipline, setTeacherByDiscipline] =
         useState<TeacherByDiscipline>({});
-    const [categories, setCategories] = useState<string[]>([]);
+    const [categories, setCategories] = useState<Categories>({});
     const { setMessage } = useAlert();
     const navigate = useNavigate();
-    const [formData, setFormData] = useState<TestData>({
-        title: '',
-        testPDF: '',
-        category: '',
-        discipline: '',
-        teacher: '',
-    });
-    const teachers: string[] = formData.discipline
-        ? teacherByDiscipline[formData.discipline]
+    const [selectedCategory, setSelectedCategory] = useState<string>('');
+    const [selectedDiscipline, setSelectedDiscipline] = useState<string>('');
+    const [selectedTeacher, setSelectedTeacher] = useState<string>('');
+    const teachers: string[] = selectedDiscipline
+        ? Object.keys(teacherByDiscipline[selectedDiscipline])
         : [];
+    const [formData, setFormData] = useState<TestData>({
+        name: '',
+        pdfUrl: '',
+        categoryId: null,
+        teacherDisciplineId: null,
+    });
 
     useEffect(() => {
         async function loadPage() {
@@ -45,9 +51,12 @@ function Add() {
             const testsData: any = teachersDisciplinesSort(data.tests);
             setTeacherByDiscipline(testsData);
             const { data: categoriesData } = await api.getCategories(token);
-            setCategories(
-                categoriesData.categories.map((category) => category.name)
+            const categories: Categories = {};
+            categoriesData.categories.forEach(
+                (category) => (categories[category.name] = category.id)
             );
+
+            setCategories(categories);
         }
         loadPage();
     }, [token]);
@@ -56,11 +65,31 @@ function Add() {
         setFormData({ ...formData, [e.target.name]: e.target.value });
     }
 
+    function handleTeacherDisciplineId(value: string) {
+        setFormData({
+            ...formData,
+            teacherDisciplineId: teacherByDiscipline[selectedDiscipline][value],
+        });
+    }
+
+    function handleCategoryId(value: string) {
+        setFormData({
+            ...formData,
+            categoryId: categories[value],
+        });
+    }
+
     async function handleSubmit(e: React.FormEvent) {
         e.preventDefault();
         setMessage(null);
 
-        if (!formData?.title || !formData?.testPDF || !formData?.category) {
+        if (
+            !formData?.name ||
+            !formData?.pdfUrl ||
+            !formData?.categoryId ||
+            !selectedDiscipline ||
+            !selectedTeacher
+        ) {
             setMessage({
                 type: 'error',
                 text: 'Todos os campos são obrigatórios!',
@@ -74,11 +103,20 @@ function Add() {
                 type: 'success',
                 text: 'Prova adicionada com sucesso!',
             });
-        } catch (error: Error | AxiosError | any) {
+            setFormData({
+                name: '',
+                pdfUrl: '',
+                categoryId: null,
+                teacherDisciplineId: null,
+            });
+            setSelectedCategory('');
+            setSelectedDiscipline('');
+            setSelectedTeacher('');
+        } catch (error: any) {
             if (error.response) {
                 setMessage({
                     type: 'error',
-                    text: error.response.data,
+                    text: 'Erro, verifique os dados e tente novamente',
                 });
                 return;
             }
@@ -135,30 +173,31 @@ function Add() {
                 </Box>
                 <Form onSubmit={handleSubmit}>
                     <TextField
-                        name="title"
+                        name="name"
                         sx={styles.input}
                         label="Título da prova"
                         type="text"
                         variant="outlined"
                         onChange={handleInputChange}
-                        value={formData.title}
+                        value={formData.name}
                     />
                     <TextField
-                        name="testPDF"
+                        name="pdfUrl"
                         sx={styles.input}
                         label="PDF da prova"
                         type="text"
                         variant="outlined"
                         onChange={handleInputChange}
-                        value={formData.testPDF}
+                        value={formData.pdfUrl}
                     />
                     <Autocomplete
-                        id="category"
+                        id="categoryId"
                         sx={styles.input}
-                        options={categories}
-                        value={formData.category}
-                        onChange={(event: any, newValue: string | null) => {
-                            setFormData({ ...formData, category: newValue });
+                        options={Object.keys(categories)}
+                        value={selectedCategory}
+                        onChange={(event: any, newValue: any) => {
+                            setSelectedCategory(newValue);
+                            handleCategoryId(newValue);
                         }}
                         isOptionEqualToValue={(
                             option: string,
@@ -174,14 +213,11 @@ function Add() {
                         id="discipline"
                         options={Object.keys(teacherByDiscipline)}
                         sx={styles.input}
-                        value={formData.discipline}
-                        onChange={(event: any, newValue: any) =>
-                            setFormData({
-                                ...formData,
-                                teacher: '',
-                                discipline: newValue,
-                            })
-                        }
+                        value={selectedDiscipline}
+                        onChange={(event: any, newValue: any) => {
+                            setSelectedDiscipline(newValue);
+                            setSelectedTeacher('');
+                        }}
                         isOptionEqualToValue={(
                             option: string,
                             value: string
@@ -195,12 +231,10 @@ function Add() {
                     <Autocomplete
                         id="teacher"
                         options={teachers}
-                        value={formData.teacher}
-                        onChange={(event: any, newValue: string | null) => {
-                            setFormData({
-                                ...formData,
-                                teacher: newValue,
-                            });
+                        value={selectedTeacher}
+                        onChange={(event: any, newValue: any) => {
+                            setSelectedTeacher(newValue);
+                            handleTeacherDisciplineId(newValue);
                         }}
                         sx={styles.input}
                         isOptionEqualToValue={(
@@ -235,12 +269,12 @@ function teachersDisciplinesSort(data: TestByTeacher[]) {
     data.forEach((item: any) => {
         const discipline: string = item.discipline.name;
         const teacher: string = item.teacher.name;
-        if (teacherByDiscipline[discipline]) {
-            teacherByDiscipline[discipline].push(teacher);
-        } else {
-            teacherByDiscipline[discipline] = [teacher];
+        if (!teacherByDiscipline[discipline]) {
+            teacherByDiscipline[discipline] = { [teacher]: item.id };
         }
+        teacherByDiscipline[discipline][teacher] = item.id;
     });
+
     return teacherByDiscipline;
 }
 export default Add;
