@@ -20,7 +20,7 @@ import Swal from 'sweetalert2';
 import api from '../../services/api';
 import { useNavigate } from 'react-router-dom';
 
-function Repo() {
+function Main() {
     const [tab, setTab] = useState(0);
     const [teachers, setTeachers] = useState([]);
     const [dataByTeacher, setDataByTeacher] = useState([]);
@@ -119,7 +119,9 @@ function Repo() {
                                                                     <ListItem>
                                                                         <ListItemText
                                                                             primary={
-                                                                                test.category
+                                                                                test
+                                                                                    .category
+                                                                                    .name
                                                                             }
                                                                             secondary={
                                                                                 <a
@@ -184,16 +186,16 @@ function Repo() {
                                             <Typography>{test.name}</Typography>
                                         </AccordionSummary>
                                         <AccordionDetails>
-                                            <List key={test.categorie.name}>
+                                            <List key={test.category.name}>
                                                 <ListItem>
                                                     <ListItemText
                                                         primary={
-                                                            test.categorie.name
+                                                            test?.category.name
                                                         }
                                                         secondary={
                                                             <a
                                                                 href={
-                                                                    test.pdfUrl
+                                                                    test?.pdfUrl
                                                                 }
                                                             >
                                                                 {test.name}{' '}
@@ -294,4 +296,4 @@ function Repo() {
     );
 }
 
-export default Repo;
+export default Main;
